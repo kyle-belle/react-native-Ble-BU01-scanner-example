@@ -60,7 +60,7 @@ bool hasListeners;
 - (void)didDiscoverBleReader:(BU01_BleReader *)reader {
   RCTLogInfo(@"didDiscoverBleReader");
   [self.readers addObject:reader];
-  [self sendEventWithName:@"BleDeviceDiscovered" body: @{@"readerName": reader.name, @"rssi": reader.RSSI}];
+  [self sendEventWithName:@"BleDeviceDiscovered" body: @{@"readerName": reader.name?reader.name:@"null", @"rssi": reader.RSSI?reader.RSSI:@"null"}];
 }
 
 - (void)scanForBleReader {
@@ -119,9 +119,9 @@ bool hasListeners;
       }
     } else {
       if (ret != 0) {
-        [self sendEventWithName:@"ErrorScanning" body:@{@"errorCode": [NSNumber numberWithInt: ret]}];
         NSLog(@"inventory failed: %d", ret);
       }
+      [self sendEventWithName:@"ErrorScanning" body:@{@"errorCode": [NSNumber numberWithInt: ret]}];
     }
   }];
 }
@@ -147,7 +147,7 @@ RCT_EXPORT_METHOD(addEvent: (NSString*)name location: (NSString*) location callb
   RCTLogInfo(@"Pretending to create an event %@ at %@", name, location);
   callback(@[[NSNull null], name, location]);
   if(hasListeners){
-    [self eventReceived: location];
+     [self eventReceived: location];
   }
 }
 
@@ -157,8 +157,8 @@ RCT_EXPORT_METHOD(searchForBleReader:(RCTResponseSenderBlock) callback)
   self.searchFinishCallback = callback;
   if(hasListeners){
     [self sendEventWithName:@"StartBleSearch" body:@{@"msg": @"Search Started!"}];
-  }
-}
+  } 
+} 
 
 RCT_EXPORT_METHOD(connectToBleReader: (NSDictionary*) reader index: (nonnull NSNumber*) index callback: (RCTResponseSenderBlock) callback){
   self.reader = self.readers[index.intValue];
@@ -173,6 +173,9 @@ RCT_EXPORT_METHOD(connectToBleReader: (NSDictionary*) reader index: (nonnull NSN
 }
 
 RCT_EXPORT_METHOD(disconnectFromBleReader: (RCTResponseSenderBlock) callback){
+  if(self.inventoring){
+    self.inventoring = false;
+  }
   [self.reader disconnect];
   
   callback(@[[NSNull null], @"disconnected"]);

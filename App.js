@@ -156,7 +156,7 @@ class App extends Component{
 
           <FlatList style={{flex: 1, backgroundColor:"rgb(220,220,255)"}} data={this.state.readers} renderItem={({item, index}) => {
             return (
-              <View style={[styles.deviceListItemStyle, {borderLeftColor: (this.state.connectedIndex === index && this.state.connectedToDevice)?(this.state.scanning?"limegreen":"gold"):"white"}]}>
+              <View style={[styles.deviceListItemStyle, {borderLeftColor: (this.state.connectedIndex === index && this.state.connectedToDevice)?(this.state.scanning?"limegreen":"gold"):(this.state.connectedIndex === index)?"red":"white"}]}>
                 <TouchableOpacity onLongPress={() => {
                   BleNative.disconnectFromBleReader((err, res) => {
                   console.log(res);
@@ -168,7 +168,7 @@ class App extends Component{
                 }
               });
             }:() => {
-                  BleNative.connectToBleReader(item, index, () => {this.setState({connectedToDevice: item, connectedIndex: index})});
+                  BleNative.connectToBleReader(item, index, () => {this.setState({connectedReader: item, connectedIndex: index})});
                 }} style={{width: "100%", height: "100%", justifyContent: "center"}}>
                   <Text>{index+1} {item.readerName}</Text>
                 </TouchableOpacity>
